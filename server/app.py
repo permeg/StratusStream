@@ -11,7 +11,9 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app) # Enable CORS for all routes
+CORS(app, origins=["http://localhost:3000"]) # Enable CORS for React frontend
+    # Ensures React frontend running on localhost:3000 can communicate with this Flask backend without 
+    # CORS issues.
 
 # Retrieve API Keys from environment variables
 OWM_API_KEY = os.environ.get("OPENWEATHERMAP_API_KEY")
@@ -23,16 +25,6 @@ if not GEMINI_API_KEY:
 if not OWM_API_KEY:
     print("CRITICAL: OPENWEATHERMAP_API_KEY not found. Weather data cannot be fetched.")
 
-# You can also add a quick test for Gemini model availability here if desired
-# try:
-#     if GEMINI_API_KEY:
-#         genai.configure(api_key=GEMINI_API_KEY)
-#         print("Available Gemini Models for generateContent:")
-#         for model in genai.list_models():
-#             if 'generateContent' in model.supported_generation_methods:
-#                 print(f"- {model.name}")
-# except Exception as e:
-#     print(f"Error configuring or listing Gemini models: {e}")
 
 def get_owm_weather(city):
     current_url = "http://api.openweathermap.org/data/2.5/weather"
@@ -75,10 +67,10 @@ def get_gemini_summary(weather_data_str):
     
     try:
         genai.configure(api_key=GEMINI_API_KEY)
-        # Choose your preferred model. 'gemini-1.5-flash-latest' is a good, fast option.
-        # The original code used 'gemini-2.0-flash-thinking-exp', which might be an internal or specific version.
-        # Let's use a generally available one like 'gemini-1.5-flash-latest' or 'gemini-pro'.
-        model = genai.GenerativeModel(model_name='gemini-1.5-flash-latest')
+
+        model = genai.GenerativeModel(model_name='gemini-2.5-flash')
+            # chose Flash because it is optimized for speed and lower latency, 
+            # which is ideal for a responsive weather summary feature.
         
         # Craft a good prompt!
         prompt = (
